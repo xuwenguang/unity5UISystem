@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class UIScreen : MonoBehaviour
+public class UIRoot : MonoBehaviour
 {
 	public AnimationClip TransitionInAnimation;
 	public AnimationClip TransitionOutAnimation;

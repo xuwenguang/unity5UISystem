@@ -1,8 +1,9 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scenes/UIManager.cs">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scenes/UIRoot.cs">
     <Files>
-      <File FileName="Assets/Scenes/UIManager.cs" Line="67" Column="2" />
+      <File FileName="Assets/Scenes/UIManager.cs" Line="321" Column="53" />
+      <File FileName="Assets/Scenes/UIRoot.cs" Line="12" Column="40" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

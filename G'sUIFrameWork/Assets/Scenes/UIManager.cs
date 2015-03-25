@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using System.Linq;
+using UnityEngine.EventSystems;
+using System;
 
 /// <summary>
 /// this code makes sure each of the scenes in the list can be automically added into build setting
@@ -10,9 +12,9 @@ using System.Linq;
 /// </summary>
 public class UIManager : MonoBehaviour {
 
-	public Object[] Scenes;
-	public Object InitialScene;
-	public Object[]InvalidBackTransitionScene;
+	public UnityEngine.Object[] Scenes;
+	public UnityEngine.Object InitialScene;
+	public UnityEngine.Object[]InvalidBackTransitionScene;
 	// Use this for initialization
 	void Awake()
 	{
@@ -28,7 +30,7 @@ public class UIManager : MonoBehaviour {
 		{
 			sceneList.Add(s);
 		}
-		foreach(Object scene in Scenes)
+		foreach(UnityEngine.Object scene in Scenes)
 		{
 			bool inList=false;
 			string scenePath=AssetDatabase.GetAssetPath(scene);
@@ -63,10 +65,9 @@ public class UIManager : MonoBehaviour {
 //	};
 //	
 	
-	//screen list, saving the uiscreen script and screen
-	private Dictionary<Scenes, UIScreen> _scenesDict;
-	//store the type of the screen script inherite from uiscreen, just to know its name
-	private Dictionary<System.Type, Scenes> _scenesTypeDict;
+	//screen list, saving the uiscreen script and screen,string should be the scene name
+	private Dictionary<string, UIRoot> _scenesDict;
+
 	
 	//[note] commented all the places that use canvasRoot, because want to add more flexibility to the ui system that all the screens can use different camera settings, also avoided the Scrollrect flickering problem
 	//if problem occurs, will add this back
@@ -77,8 +78,8 @@ public class UIManager : MonoBehaviour {
 	public EventSystem EventSystemComp;
 	public GameObject BootCanvasGO;
 	public Camera UICamera;
-	private Scenes _currentScene;
-	private Scenes _previousScene;
+	private string _currentScene;
+	private string _previousScene;
 	
 	//for toggle global input
 	public bool isBackgroundMoving=false;
@@ -108,8 +109,7 @@ public class UIManager : MonoBehaviour {
 	//load all the screens
 	public IEnumerator Setup(System.Action setupCB)
 	{
-		_scenesDict=new Dictionary<Scenes,UIScreen>();
-		_scenesTypeDict = new Dictionary<System.Type, Scenes> ();
+		_scenesDict=new Dictionary<Scenes,UIRoot>();
 		_isLoading = true;
 		
 		foreach ( var loadingData in LoadingSequence.loadingSequenceData )
@@ -120,7 +120,7 @@ public class UIManager : MonoBehaviour {
 			GameObject sceneGameObject = GameObject.Find( "Root_" + sceneName );
 			Z2HDebug.Assert( sceneGameObject != null, "can not find screen : " + sceneName );
 			
-			UIScreen sceneScript = sceneGameObject.GetComponent<UIScreen>();
+			UIRoot sceneScript = sceneGameObject.GetComponent<UIRoot>();
 			
 			_scenesDict.Add( loadingData.Scene, sceneScript );
 			_scenesTypeDict.Add( sceneScript.GetType(), loadingData.Scene );
@@ -158,14 +158,14 @@ public class UIManager : MonoBehaviour {
 	/// <param name="animTransitionIn"></param>
 	/// <param name="animTransitionOut"></param>
 	/// <param name="setupCB"></param>
-	public void ShowScreen<T>( string animTransitionIn = UIScreen.DEFAULT_TRANSITION_IN, string animTransitionOut = UIScreen.DEFAULT_TRANSITION_OUT, System.Action<T> setupCB = null ) where T : UIScreen
+	public void ShowScreen<T>( string animTransitionIn = UIRoot.DEFAULT_TRANSITION_IN, string animTransitionOut = UIRoot.DEFAULT_TRANSITION_OUT, System.Action<T> setupCB = null ) where T : UIRoot
 	{
 		Scenes scene = _scenesTypeDict[typeof( T )];
 		
 		
 		PushPreviousScreenToPreviousScreenList(scene);
 		
-		CoroutineManager.StartCoroutine( _TransitionScreenIn( scene, animTransitionIn, animTransitionOut, () =>
+		StartCoroutine( _TransitionScreenIn( scene, animTransitionIn, animTransitionOut, () =>
 		                                                     {
 			if ( setupCB != null )
 			{
@@ -175,12 +175,12 @@ public class UIManager : MonoBehaviour {
 		
 	}
 	
-	public void ShowScreen( Scenes scene, string animTransitionIn = UIScreen.DEFAULT_TRANSITION_IN, string animTransitionOut = UIScreen.DEFAULT_TRANSITION_OUT, System.Action setupCB = null )
+	public void ShowScreen( Scenes scene, string animTransitionIn = UIRoot.DEFAULT_TRANSITION_IN, string animTransitionOut = UIRoot.DEFAULT_TRANSITION_OUT, System.Action setupCB = null )
 	{
 		
 		PushPreviousScreenToPreviousScreenList(scene);
 		
-		CoroutineManager.StartCoroutine( _TransitionScreenIn( scene, animTransitionIn, animTransitionOut, null ) );
+		StartCoroutine( _TransitionScreenIn( scene, animTransitionIn, animTransitionOut, null ) );
 	}
 	
 	IEnumerator _TransitionScreenIn( Scenes newScene, string stateName, string outStateName, System.Action setupCB )
@@ -188,18 +188,18 @@ public class UIManager : MonoBehaviour {
 		
 		ToggleGlobalInput( false );
 		
-		UIScreen screenIn = _scenesDict[newScene];
-		UIScreen screenOut = _scenesDict.ContainsKey( _currentScene ) ? _scenesDict[_currentScene] : null;
+		UIRoot screenIn = _scenesDict[newScene];
+		UIRoot screenOut = _scenesDict.ContainsKey( _currentScene ) ? _scenesDict[_currentScene] : null;
 		
 		// Overlay or going from boot -> splash, show immediatly
 		//
 		if( IsOverlay( newScene ) || _currentScene == Scenes.None )
 		{
-			yield return CoroutineManager.StartCoroutine( _PerformTransition( screenIn, setupCB ) );
+			yield return StartCoroutine( _PerformTransition( screenIn, setupCB ) );
 		}
 		else // Perform full transition between current and new
 		{       
-			yield return CoroutineManager.StartCoroutine( _PerformTransition( screenIn, screenOut, outStateName, setupCB ) );
+			yield return StartCoroutine( _PerformTransition( screenIn, screenOut, outStateName, setupCB ) );
 		}
 		
 		
@@ -218,7 +218,7 @@ public class UIManager : MonoBehaviour {
 		}
 		
 		
-		yield return CoroutineManager.StartCoroutine( screenIn._TransitionIn( stateName ) );
+		yield return StartCoroutine( screenIn._TransitionIn( stateName ) );
 		screenIn.OnTransitionInComplete();
 		
 		
@@ -238,7 +238,7 @@ public class UIManager : MonoBehaviour {
 		return _scenesDict[scene] is UIOverlay;
 	}
 	
-	IEnumerator _PerformTransition( UIScreen screenIn, UIScreen screenOut, string outStateName, System.Action setupCB )
+	IEnumerator _PerformTransition( UIRoot screenIn, UIRoot screenOut, string outStateName, System.Action setupCB )
 	{
 		screenOut.OnPreTransitionOut();
 		screenIn.OnPreTransitionIn();
@@ -261,7 +261,7 @@ public class UIManager : MonoBehaviour {
 		
 		// Transition out current screen
 		//
-		CoroutineManager.StartCoroutine( screenOut._TransitionOut( outStateName, () =>
+		StartCoroutine( screenOut._TransitionOut( outStateName, () =>
 		                                                          {
 			startTransitionIn = true;
 			
@@ -281,11 +281,11 @@ public class UIManager : MonoBehaviour {
 		
 		screenOut.StartTransitionnInEvent -= fn;
 		
-		yield return CoroutineManager.StartCoroutine( SetupScreenIn( setupCB, screenIn ) );
+		yield return StartCoroutine( SetupScreenIn( setupCB, screenIn ) );
 	}
 	
 	
-	IEnumerator _PerformTransition( UIScreen screenIn, System.Action setupCB )
+	IEnumerator _PerformTransition( UIRoot screenIn, System.Action setupCB )
 	{
 		if ( setupCB != null )
 		{
@@ -293,11 +293,11 @@ public class UIManager : MonoBehaviour {
 		}
 		
 		screenIn.OnPreTransitionIn();
-		yield return CoroutineManager.StartCoroutine( SetupScreenIn( setupCB, screenIn ) );
+		yield return StartCoroutine( SetupScreenIn( setupCB, screenIn ) );
 		screenIn.OnTransitionInComplete();
 	}
 	
-	IEnumerator SetupScreenIn( System.Action setupCB, UIScreen screenIn )
+	IEnumerator SetupScreenIn( System.Action setupCB, UIRoot screenIn )
 	{
 		if ( screenIn == null )
 		{
@@ -308,21 +308,21 @@ public class UIManager : MonoBehaviour {
 		//{
 		//    setupCB();
 		//}
-		yield return CoroutineManager.StartCoroutine( screenIn.Initialize() );
+		yield return StartCoroutine( screenIn.Initialize() );
 	}
 	
 	//use to hide overlay screens, like top menu and message box
-	public void HideScreen<T>( string animTransitionOut = UIScreen.DEFAULT_TRANSITION_OUT ) where T : UIOverlay
+	public void HideScreen<T>( string animTransitionOut = UIRoot.DEFAULT_TRANSITION_OUT ) where T : UIOverlay
 	{
 		var scene = _scenesTypeDict[typeof( T )];
-		CoroutineManager.StartCoroutine( _OverlayTransitionOut( scene, Scenes.None, animTransitionOut, null ) );
+		StartCoroutine( _OverlayTransitionOut( scene, Scenes.None, animTransitionOut, null ) );
 	}
 	
 	//transition out function only for overlay screens	
 	IEnumerator _OverlayTransitionOut( Scenes currentScene, Scenes newScene, string stateName, System.Action setupCB )
 	{
-		UIScreen screenOut = _scenesDict[currentScene];
-		UIScreen screenIn = null;
+		UIRoot screenOut = _scenesDict[currentScene];
+		UIRoot screenIn = null;
 		
 		screenOut.OnPreTransitionOut();
 		
@@ -334,7 +334,7 @@ public class UIManager : MonoBehaviour {
 		
 		// Transition out current screen
 		// do not put all the screen active state function in the transition out function, this can separate the functionality of the code, will be easier to maintance in the future
-		yield return CoroutineManager.StartCoroutine( screenOut._TransitionOut( stateName, () =>
+		yield return StartCoroutine( screenOut._TransitionOut( stateName, () =>
 		                                                                       {
 			screenOut.OnTransitionOutComplete();
 			screenOut.SetSceneActiveState( false );
@@ -345,7 +345,7 @@ public class UIManager : MonoBehaviour {
 		
 		screenOut.OnTransitionOutComplete();
 		
-		yield return CoroutineManager.StartCoroutine( SetupScreenIn( setupCB, screenIn ) );
+		yield return StartCoroutine( SetupScreenIn( setupCB, screenIn ) );
 	}
 	
 	
@@ -386,18 +386,18 @@ public class UIManager : MonoBehaviour {
 				{
 					//clear previous animation state
 					ResetScreenAnimation(lastScreenInList);
-					animTransitionIn=UIScreen.DEFAULT_TRANSITION_IN;
+					animTransitionIn=UIRoot.DEFAULT_TRANSITION_IN;
 				}
 				if(animTransitionOut==null)
 				{
 					ResetScreenAnimation(_currentScene);
-					animTransitionOut=UIScreen.DEFAULT_TRANSITION_OUT;
+					animTransitionOut=UIRoot.DEFAULT_TRANSITION_OUT;
 				}
 				//do not use show screen is because do not want to add this screen to the previous screen list
 				if(CanBeTransitionBackTo(lastScreenInList))
 				{
 					//call the function on UIScreen script, the move background function is in there
-					CoroutineManager.StartCoroutine( _TransitionScreenIn( lastScreenInList, animTransitionIn, animTransitionOut, 
+					StartCoroutine( _TransitionScreenIn( lastScreenInList, animTransitionIn, animTransitionOut, 
 					                                                     ()=>{_scenesDict[_currentScene].BackButtonSelected();} ) );
 					previousScreenList.RemoveAt (lastIndex);
 				}
@@ -413,7 +413,7 @@ public class UIManager : MonoBehaviour {
 	
 	public void ResetScreenAnimation(Scenes scene)
 	{
-		UIScreen screenScript = _scenesDict[scene];
+		UIRoot screenScript = _scenesDict[scene];
 		screenScript.ResetAnimationPosition ();
 	}
 	
