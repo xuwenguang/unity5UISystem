@@ -31,11 +31,10 @@ public class UIManager : MonoBehaviour {
 		EditorApplication.playmodeStateChanged += UpdateBuildSettingScenes;
 #endif
 
-//		EventSystemComp=GameObject.Find("Root_Boot/EventSystem").GetComponent<EventSystem>();
-//		EventSystemComp.enabled = false;
-//		
-//		BootCanvasGO = GameObject.Find ("Boot_Canvas");
-//		UICamera = GameObject.Find ("Root_Boot/Camera").GetComponent<Camera>();
+		EventSystemComp=GameObject.Find("Boot/EventSystem").GetComponent<EventSystem>();
+		EventSystemComp.enabled = false;
+		BootCanvasGO = GameObject.Find ("Boot_Canvas");
+		UICamera = GameObject.Find ("Boot/Camera").GetComponent<Camera>();
 
 
 	}
@@ -70,7 +69,7 @@ public class UIManager : MonoBehaviour {
 		if(AutoLoadUIScenes)
 		{
 			//load screens
-			StartCoroutine(Setup(null));
+			StartCoroutine(Setup(ShowInitialScreen));
 		}
 	}
 
@@ -112,7 +111,7 @@ public class UIManager : MonoBehaviour {
 			string sceneName=s.scene.name;
 			yield return Application.LoadLevelAdditiveAsync( sceneName );
 			
-			GameObject sceneGameObject = GameObject.Find( "Root_" + sceneName );
+			GameObject sceneGameObject = GameObject.Find( "Screen_" + sceneName );
 			DebugUtil.Assert( sceneGameObject != null, "can not find screen : " + sceneName );
 			
 			ScreenRoot sceneScript = sceneGameObject.GetComponent<ScreenRoot>();
@@ -199,6 +198,7 @@ public class UIManager : MonoBehaviour {
 		yield return StartCoroutine( screenIn._TransitionIn( stateName ) );
 		screenIn.OnTransitionInComplete();
 	
+		ToggleGlobalInput(true);
 	}
 	
 	//to see the screen is a UIOverlay screen or not (uioverlay screen is like pop up menus)

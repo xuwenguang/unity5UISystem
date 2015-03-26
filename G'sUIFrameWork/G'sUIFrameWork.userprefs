@@ -1,0 +1,14 @@
+﻿<Properties>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scenes/UIManager.cs">
+    <Files>
+      <File FileName="Assets/Scenes/ScreenRoot.cs" Line="94" Column="15" />
+      <File FileName="Assets/Scenes/DebugUtil.cs" Line="10" Column="1" />
+      <File FileName="Assets/Scenes/UIManager.cs" Line="191" Column="13" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>

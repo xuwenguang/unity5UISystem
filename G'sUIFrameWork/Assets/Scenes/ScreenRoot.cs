@@ -26,10 +26,10 @@ public class ScreenRoot : MonoBehaviour
         var eventSystem = GetComponentInChildren<UnityEngine.EventSystems.EventSystem>();
         if ( eventSystem != null ) Destroy( eventSystem.gameObject );
 
-        Transform rootCanvasTransform = transform.Find( "Canvas" );
+        Transform rootCanvasTransform = this.transform;
         DebugUtil.Assert( rootCanvasTransform != null, "Unable to find root canvas! - " + name );
 #if UNITY_5
-		_canvas = rootCanvasTransform.GetComponent(typeof (Canvas)) as Canvas;
+		_canvas = rootCanvasTransform.GetComponent<Canvas>();
 #else
 		_canvas=rootCanvasTransform.GetComponent<Canvas>();
 #endif
@@ -39,14 +39,15 @@ public class ScreenRoot : MonoBehaviour
         //
         _animationComp = GetComponent<Animation>();
 
-        Destroy( _canvas.worldCamera.gameObject );
+		var camera=GetComponentInChildren<Camera>();
+        Destroy( camera.gameObject );
         _canvas.worldCamera = Camera.main;
 
         _threeDeeObjects = transform.FindChild( "Canvas/3DObjects" );
 
         SetSceneActiveState( false );
         
-		DebugUtil.Assert( name.StartsWith( "Root_" ), "Invalid screen name! Structure must be \"Root_ScreenName\" " + name );
+		DebugUtil.Assert( name.StartsWith( "Screen_" ), "Invalid screen name! Structure must be \"Screen_SceneName\" " + name );
 
         string sceneName = name.Split( '_' )[1];
 
