@@ -28,8 +28,11 @@ public class ScreenRoot : MonoBehaviour
 
         Transform rootCanvasTransform = transform.Find( "Canvas" );
         DebugUtil.Assert( rootCanvasTransform != null, "Unable to find root canvas! - " + name );
-
-        _canvas = rootCanvasTransform.GetComponent<Canvas>();
+#if UNITY_5
+		_canvas = rootCanvasTransform.GetComponent(typeof (Canvas)) as Canvas;
+#else
+		_canvas=rootCanvasTransform.GetComponent<Canvas>();
+#endif
 		DebugUtil.Assert( _canvas != null, "Unable to find canvas component! - " + name );
 
         // May not have this if no transitions setup
