@@ -12,7 +12,17 @@ using System;
 /// </summary>
 public class UIManager : MonoBehaviour {
 
-	public bool MasterSceneOnPlay;
+	public const string MasterScenePath="masterscenepath";
+	private static UIManager instance;
+	public static UIManager Instance
+	{
+		get
+		{
+			return instance;
+		}
+	}
+
+	public bool LoadMasterSceneOnPlay=true;
 	public bool AutoLoadUIScenes=true;
 
 	[Serializable]
@@ -27,6 +37,10 @@ public class UIManager : MonoBehaviour {
 //	 Use this for initialization
 	void Awake()
 	{
+		if(instance==null)
+		{
+			instance=this;
+		}
 #if UNITY_EDITOR
 		EditorApplication.playmodeStateChanged += UpdateBuildSettingScenes;
 #endif
@@ -61,6 +75,17 @@ public class UIManager : MonoBehaviour {
 				sceneList.Add(new EditorBuildSettingsScene(scenePath,true));
 		}
 		EditorBuildSettings.scenes = sceneList.ToArray ();
+
+		//save current scene path
+		if(LoadMasterSceneOnPlay)
+		{
+			PlayerPrefs.SetString(MasterScenePath,EditorApplication.currentScene);
+		}
+		else
+		{
+			PlayerPrefs.SetString(MasterScenePath,"");
+		}
+		PlayerPrefs.Save();
 	}
 #endif
 

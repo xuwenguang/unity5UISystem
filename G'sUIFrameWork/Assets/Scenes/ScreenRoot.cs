@@ -22,38 +22,42 @@ public class ScreenRoot : MonoBehaviour
 
 
     protected virtual void Awake()
-    {
-        var eventSystem = GetComponentInChildren<UnityEngine.EventSystems.EventSystem>();
-        if ( eventSystem != null ) Destroy( eventSystem.gameObject );
-
-        Transform rootCanvasTransform = this.transform;
-        DebugUtil.Assert( rootCanvasTransform != null, "Unable to find root canvas! - " + name );
-#if UNITY_5
-		_canvas = rootCanvasTransform.GetComponent<Canvas>();
-#else
-		_canvas=rootCanvasTransform.GetComponent<Canvas>();
+	{
+#if UNITY_EDITOR
+		if(PlayerPrefs.GetString(UIManager.MasterScenePath)!="")
+		{
 #endif
-		DebugUtil.Assert( _canvas != null, "Unable to find canvas component! - " + name );
+			var eventSystem = GetComponentInChildren<UnityEngine.EventSystems.EventSystem>();
+			if ( eventSystem != null ) Destroy( eventSystem.gameObject );
+			
+			Transform rootCanvasTransform = this.transform;
+			DebugUtil.Assert( rootCanvasTransform != null, "Unable to find root canvas! - " + name );
 
-        // May not have this if no transitions setup
-        //
-        _animationComp = GetComponent<Animation>();
+			_canvas = rootCanvasTransform.GetComponent<Canvas>();
 
-		var camera=GetComponentInChildren<Camera>();
-        Destroy( camera.gameObject );
-        _canvas.worldCamera = Camera.main;
-
-        _threeDeeObjects = transform.FindChild( "Canvas/3DObjects" );
-
-        SetSceneActiveState( false );
-        
-		DebugUtil.Assert( name.StartsWith( "Screen_" ), "Invalid screen name! Structure must be \"Screen_SceneName\" " + name );
-
-        string sceneName = name.Split( '_' )[1];
-
-        _defaultAnimationIn = string.Format( "UI_{0}_In", sceneName );
-        _defaultAnimationOut = string.Format( "UI_{0}_Out", sceneName );
-
+			DebugUtil.Assert( _canvas != null, "Unable to find canvas component! - " + name );
+			
+			// May not have this if no transitions setup
+			//
+			_animationComp = GetComponent<Animation>();
+			
+			var camera=GetComponentInChildren<Camera>();
+			Destroy( camera.gameObject );
+			_canvas.worldCamera = Camera.main;
+			
+			_threeDeeObjects = transform.FindChild( "Canvas/3DObjects" );
+			
+			SetSceneActiveState( false );
+			
+			DebugUtil.Assert( name.StartsWith( "Screen_" ), "Invalid screen name! Structure must be \"Screen_SceneName\" " + name );
+			
+			string sceneName = name.Split( '_' )[1];
+			
+			_defaultAnimationIn = string.Format( "UI_{0}_In", sceneName );
+			_defaultAnimationOut = string.Format( "UI_{0}_Out", sceneName );
+#if UNITY_EDITOR
+		}
+#endif
     }
 
 
