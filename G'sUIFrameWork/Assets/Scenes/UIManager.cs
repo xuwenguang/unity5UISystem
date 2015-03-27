@@ -45,6 +45,7 @@ public class UIManager : MonoBehaviour {
 		EditorApplication.playmodeStateChanged += UpdateBuildSettingScenes;
 #endif
 
+
 		EventSystemComp=GameObject.Find("Boot/EventSystem").GetComponent<EventSystem>();
 		EventSystemComp.enabled = false;
 		BootCanvasGO = GameObject.Find ("Boot_Canvas");
@@ -107,9 +108,12 @@ public class UIManager : MonoBehaviour {
 	//	public Canvas CanvasRoot;
 	private bool _isLoading;
 	public bool IsLoadingInProgress { get { return _isLoading; } private set { _isLoading = value; } }
-	
+
+	[HideInInspector]
 	public EventSystem EventSystemComp;
+	[HideInInspector]
 	public GameObject BootCanvasGO;
+	[HideInInspector]
 	public Camera UICamera;
 	private Screen _currentScreen=new Screen();
 	private Screen _previousScreen=new Screen();
@@ -130,19 +134,20 @@ public class UIManager : MonoBehaviour {
 	{
 		_screenDict=new Dictionary<Screen,ScreenRoot>();
 		_isLoading = true;
-		
+
 		foreach ( Screen s in Screens )
 		{
 			string sceneName=s.scene.name;
 			yield return Application.LoadLevelAdditiveAsync( sceneName );
-			
+
 			GameObject sceneGameObject = GameObject.Find( "Screen_" + sceneName );
 			DebugUtil.Assert( sceneGameObject != null, "can not find screen : " + sceneName );
-			
+
 			ScreenRoot sceneScript = sceneGameObject.GetComponent<ScreenRoot>();
-			
+
 			_screenDict.Add( s, sceneScript );
 		}
+
 		_isLoading = false;
 		
 		if (setupCB != null)

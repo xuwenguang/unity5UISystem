@@ -1,14 +1,24 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEditor;
+using System;
 
 [CustomEditor (typeof(UIManager))]
 public class UIManagerEditor : Editor 
 {
 	void OnEnable()
 	{
+//		foreach(Delegate d in EditorApplication.playmodeStateChanged.GetInvocationList())
+//		{
+//			Debug.LogWarning(d.Method.Name);
+//			if(d.Method.Name=="CheckIfScreenIsNull")
+//			{
+//				return;
+//			}
+//		}
 		EditorApplication.playmodeStateChanged += CheckIfScreenIsNull;
 	}
+
 
 	public override void OnInspectorGUI()
 	{
@@ -33,12 +43,13 @@ public class UIManagerEditor : Editor
 		for(int i=0;i<um.Screens.Length;i++)
 		{
 			var s=um.Screens[i].scene;
-			if(s=null)
+			if(s!=null)
 			{
-				if(!s.name.Contains(".unity"))
+				string scenePath=AssetDatabase.GetAssetPath(s);
+				if(!scenePath.Contains(".unity"))
 				{
 					EditorApplication.Beep();
-					s=null;
+					um.Screens[i].scene=null;
 					Debug.LogError("the scene field should only contain a unity scene object");
 				}
 
@@ -69,7 +80,8 @@ public class UIManagerEditor : Editor
 			if(s.scene==null)
 			{
 				EditorApplication.isPlaying=false;
-				Debug.LogError("The scene in UIManager screens should not be null");
+				Debug.LogError("The scene in screens should not be null");
+				return;
 			}
 		}
 	}
