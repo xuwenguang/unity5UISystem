@@ -28,7 +28,7 @@ public class UIManager : MonoBehaviour {
 	[Serializable]
 	public struct Screen {
 		public bool ActiveOnLoad;
-		public bool IsInvalidBackTransitionScreen;
+		public bool CantTransitionBack;
 		public UnityEngine.Object scene;
 	}
 	
@@ -44,14 +44,10 @@ public class UIManager : MonoBehaviour {
 #if UNITY_EDITOR
 		EditorApplication.playmodeStateChanged += UpdateBuildSettingScenes;
 #endif
-
-
 		EventSystemComp=GameObject.Find("Boot/EventSystem").GetComponent<EventSystem>();
 		EventSystemComp.enabled = false;
 		BootCanvasGO = GameObject.Find ("Boot_Canvas");
 		UICamera = GameObject.Find ("Boot/Camera").GetComponent<Camera>();
-
-
 	}
 #if UNITY_EDITOR
 	public void UpdateBuildSettingScenes()
@@ -95,7 +91,7 @@ public class UIManager : MonoBehaviour {
 		if(AutoLoadUIScenes)
 		{
 			//load screens
-			StartCoroutine(Setup(ShowInitialScreen));
+			Setup();
 		}
 	}
 
@@ -129,8 +125,13 @@ public class UIManager : MonoBehaviour {
 		return _screenDict [screen];
 	}
 
+	public void Setup(System.Action setupCB=null)
+	{
+		StartCoroutine(SetupCoro(setupCB));
+	}
+
 	//load all the screens
-	public IEnumerator Setup(System.Action setupCB)
+	public IEnumerator SetupCoro(System.Action setupCB)
 	{
 		_screenDict=new Dictionary<Screen,ScreenRoot>();
 		_isLoading = true;
@@ -144,7 +145,14 @@ public class UIManager : MonoBehaviour {
 			DebugUtil.Assert( sceneGameObject != null, "can not find screen : " + sceneName );
 
 			ScreenRoot sceneScript = sceneGameObject.GetComponent<ScreenRoot>();
-
+#if UNITY_EDITOR
+			if(_screenDict.ContainsKey(s))
+			{
+				EditorApplication.Beep();
+				EditorApplication.isPlaying=false;
+				Debug.LogError("should not have duplicated scenes in screen list");
+			}
+#endif
 			_screenDict.Add( s, sceneScript );
 		}
 
@@ -396,7 +404,7 @@ public class UIManager : MonoBehaviour {
 					animTransitionOut=ScreenRoot.DEFAULT_TRANSITION_OUT;
 				}
 				//do not use show screen is because do not want to add this screen to the previous screen list
-				if(!lastScreenInList.IsInvalidBackTransitionScreen)
+				if(!lastScreenInList.CantTransitionBack)
 				{
 					//call the function on UIScreen script, the move background function is in there
 					StartCoroutine( _TransitionScreenIn( lastScreenInList, animTransitionIn, animTransitionOut, 
@@ -435,7 +443,7 @@ public class UIManager : MonoBehaviour {
 			else
 			{
 				//screens in the invalid list can not be transition back to
-				if(!_currentScreen.IsInvalidBackTransitionScreen)
+				if(!_currentScreen.CantTransitionBack)
 				{
 					previousScreenList.Add (_currentScreen);
 				}

@@ -80,6 +80,7 @@ public class UIManagerEditor : Editor
 			if(s.scene==null)
 			{
 				EditorApplication.isPlaying=false;
+				EditorApplication.Beep();
 				Debug.LogError("The scene in screens should not be null");
 				return;
 			}
