@@ -60,14 +60,14 @@ public class UIManagerEditor : Editor
 	{
 		//get the reference of the uimanager script
 		var uiManager=target as UIManager;
-		
+
 		if(uiManager.LoadMasterSceneOnPlay)
 		{
-			PlayerPrefs.SetString(UIManager.MasterScenePath,EditorApplication.currentScene);
+			PlayerPrefs.SetString(UIManager.MasterScenePathKey,EditorApplication.currentScene);
 		}
 		else
 		{
-			PlayerPrefs.SetString(UIManager.MasterScenePath,"");
+			PlayerPrefs.SetString(UIManager.MasterScenePathKey,"");
 		}
 		PlayerPrefs.Save();
 	}

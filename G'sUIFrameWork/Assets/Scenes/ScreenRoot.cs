@@ -19,12 +19,10 @@ public class ScreenRoot : MonoBehaviour
     private string _defaultAnimationIn;
     private string _defaultAnimationOut;
 
-
-
     protected virtual void Awake()
 	{
 #if UNITY_EDITOR
-		if(PlayerPrefs.GetString(UIManager.MasterScenePath)!="")
+		if(PlayerPrefs.GetString(UIManager.MasterScenePathKey)!=null)
 		{
 #endif
 			var eventSystem = GetComponentInChildren<UnityEngine.EventSystems.EventSystem>();
@@ -33,7 +31,7 @@ public class ScreenRoot : MonoBehaviour
 			Transform rootCanvasTransform = this.transform;
 			DebugUtil.Assert( rootCanvasTransform != null, "Unable to find root canvas! - " + name );
 
-			_canvas = rootCanvasTransform.GetComponent<Canvas>();
+			_canvas = this.gameObject.GetComponent<Canvas>();
 
 			DebugUtil.Assert( _canvas != null, "Unable to find canvas component! - " + name );
 			
@@ -94,6 +92,7 @@ public class ScreenRoot : MonoBehaviour
 
     public void SetSceneActiveState( bool isActive )
     {
+		DebugUtil.Assert(_canvas!=null,"canvas is fuccccckckckkckckcking null");
         _canvas.enabled = isActive;
         Toggle3DObjects( isActive );
     }

@@ -12,7 +12,7 @@ using System;
 /// </summary>
 public class UIManager : MonoBehaviour {
 
-	public const string MasterScenePath="masterscenepath";
+	public const string MasterScenePathKey="masterscenepath";
 	private static UIManager instance;
 	public static UIManager Instance
 	{
@@ -47,6 +47,10 @@ public class UIManager : MonoBehaviour {
 		EventSystemComp=GameObject.Find("Boot/EventSystem").GetComponent<EventSystem>();
 		EventSystemComp.enabled = false;
 		BootCanvasGO = GameObject.Find ("Boot_Canvas");
+		if(BootCanvasGO==null)
+		{
+			Debug.LogError("boot canvas is nul");
+		}
 		UICamera = GameObject.Find ("Boot/Camera").GetComponent<Camera>();
 	}
 #if UNITY_EDITOR
@@ -76,23 +80,28 @@ public class UIManager : MonoBehaviour {
 		//save current scene path
 		if(LoadMasterSceneOnPlay)
 		{
-			PlayerPrefs.SetString(MasterScenePath,EditorApplication.currentScene);
+			PlayerPrefs.SetString(UIManager.MasterScenePathKey,EditorApplication.currentScene);
 		}
 		else
 		{
-			PlayerPrefs.SetString(MasterScenePath,"");
+			PlayerPrefs.SetString(UIManager.MasterScenePathKey,"");
 		}
 		PlayerPrefs.Save();
 	}
 #endif
 
-	void Start()
+	IEnumerator Start()
 	{
-		if(AutoLoadUIScenes)
+		bool isLoading=true;
+		Setup(
+			()=>{
+			isLoading=false;
+		});
+		while(isLoading)
 		{
-			//load screens
-			Setup();
+			yield return null;
 		}
+		ShowInitialScreen();
 	}
 
 	//screen list, saving the uiscreen script and screen,string should be the scene name
@@ -220,7 +229,7 @@ public class UIManager : MonoBehaviour {
 		}
 		
 		
-		screenIn.SetSceneActiveState( true );
+		screenIn.SetSceneActiveState(true);
 		screenIn.OnSceneBecameVisible();
 		
 		// Update scene vars if not transitioning into overlay

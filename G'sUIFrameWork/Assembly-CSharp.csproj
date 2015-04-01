@@ -47,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
      <Compile Include="Assets\Scenes\DebugUtil.cs" />
+     <Compile Include="Assets\Scenes\EditorApplication.cs" />
      <Compile Include="Assets\Scenes\PopUpRoot.cs" />
      <Compile Include="Assets\Scenes\ScreenRoot.cs" />
      <Compile Include="Assets\Scenes\UIManager.cs" />
